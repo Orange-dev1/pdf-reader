@@ -39,7 +39,6 @@ npm install @sylphlab/pdf-reader-mcp
     ```bash
     node build/index.js
     ```
-    **Important:** Ensure you run this command from the root directory of the project containing the PDFs you want the server to access.
 
 ## Using Docker
 
@@ -49,10 +48,10 @@ A Docker image is available on Docker Hub.
 docker pull sylphlab/pdf-reader-mcp:latest
 ```
 
-To run the container, you need to mount the project directory containing your PDFs into the container's working directory (`/app`):
+To run the container:
 
 ```bash
-docker run -i --rm -v "/path/to/your/project:/app" sylphlab/pdf-reader-mcp:latest
+docker run -i --rm sylphlab/pdf-reader-mcp:latest
 ```
 
-Replace `/path/to/your/project` with the actual absolute path to your project folder.
+The server only processes PDFs from public URLs, so no volume mounting is required.

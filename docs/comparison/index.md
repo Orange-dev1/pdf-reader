@@ -7,14 +7,14 @@ When an AI agent needs to access information within PDF files, several approache
     - **Feasibility:** Often impossible. PDFs are binary; LLMs typically process text. Sending raw binary data is usually not supported or useful.
     - **Security:** Extremely risky if the agent has broad filesystem access.
     - **Efficiency:** Impractical due to file size and format.
-    - **PDF Reader MCP Advantage:** Provides a secure, structured way to get _textual_ data from the binary PDF.
+    - **PDF Reader MCP Advantage:** Provides a secure, structured way to get _textual_ data from the binary PDF via URL.
 
 2.  **Generic Filesystem MCP Server (like `@shtse8/filesystem-mcp`):**
 
     - **Functionality:** Can read file _content_, but for PDFs, this would be the raw binary data, which is not directly useful to an LLM.
     - **Security:** Offers similar path confinement benefits if implemented correctly.
     - **Efficiency:** Inefficient for PDFs as it doesn't parse the content.
-    - **PDF Reader MCP Advantage:** Specializes in _parsing_ PDFs to extract meaningful text and metadata.
+    - **PDF Reader MCP Advantage:** Specializes in _parsing_ PDFs to extract meaningful text and metadata from URLs.
 
 3.  **External CLI Tools (e.g., `pdftotext`, `pdfinfo`):**
 
@@ -26,9 +26,11 @@ When an AI agent needs to access information within PDF files, several approache
 
 4.  **Cloud-Based PDF APIs:**
     - **Functionality:** Often provide rich features (OCR, conversion, etc.).
-    - **Security:** Requires sending potentially sensitive local files to a third-party service.
-    - **Efficiency:** Involves network latency and potential costs.
-    - **Integration:** Requires API keys and handling HTTP requests/responses.
-    - **PDF Reader MCP Advantage:** Operates entirely locally (for local files), enhancing security and privacy. No external network dependency for local operations.
+    - **Security:** Requires sending potentially sensitive files to a third-party service.
+    - **Efficiency:** Network latency and potential rate limits.
+    - **Integration:** Requires API key management and external service dependencies.
+    - **PDF Reader MCP Advantage:** Operates entirely locally, enhancing security and privacy. No external network dependency for processing.
 
-**In summary, the PDF Reader MCP Server provides a balanced solution specifically tailored for AI agents needing secure, efficient, and structured access to PDF content within a local project context.**
+## Summary
+
+The PDF Reader MCP Server provides a **secure, efficient, and integrated solution** for AI agents needing structured access to PDF content via URL.

@@ -12,7 +12,7 @@
 
 <!-- End Status Badges Area -->
 
-Empower your AI agents (like Cline) with the ability to securely read and extract information (text, metadata, page count) from PDF files within your project context using a single, flexible tool.
+Empower your AI agents (like Cline) with the ability to securely read and extract information (text, metadata, page count) from PDF files via URL using a single, flexible tool.
 
 <a href="https://glama.ai/mcp/servers/@sylphlab/pdf-reader-mcp">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@sylphlab/pdf-reader-mcp/badge" alt="PDF Reader Server MCP server" />
@@ -96,7 +96,7 @@ Configure your MCP host to run the container, mounting your project directory to
 
 Assuming the server is running and configured in your MCP host:
 
-**MCP Request (Get metadata and page 2 text from a local PDF):**
+**MCP Request (Get metadata and page 2 text from a PDF via URL):**
 
 ```json
 {
@@ -104,7 +104,7 @@ Assuming the server is running and configured in your MCP host:
   "arguments": {
     "sources": [
       {
-        "path": "./documents/my_report.pdf",
+        "url": "https://example.com/my_report.pdf",
         "pages": [2]
       }
     ],
@@ -121,7 +121,7 @@ Assuming the server is running and configured in your MCP host:
 {
   "results": [
     {
-      "source": "./documents/my_report.pdf",
+      "source": "https://example.com/my_report.pdf",
       "success": true,
       "data": {
         "page_texts": [
@@ -138,8 +138,8 @@ Assuming the server is running and configured in your MCP host:
 
 ## Why Choose This Project?
 
-- **🛡️ Secure:** Confines file access strictly to the project root directory.
-- **🌐 Flexible:** Handles both local relative paths and public URLs.
+- **🛡️ Secure:** Only fetches PDF files via URL, no local file access.
+- **🌐 Flexible:** Handles any public PDF URL.
 - **🧩 Consolidated:** A single `read_pdf` tool serves multiple extraction needs (full text, specific pages, metadata, page count).
 - **⚙️ Structured Output:** Returns data in a predictable JSON format, easy for agents to parse.
 - **🚀 Easy Integration:** Designed for seamless use within MCP environments via `npx` or Docker.
@@ -163,12 +163,11 @@ See the [Performance Documentation](./docs/performance/index.md) for more detail
 
 ## Features
 
-- Read full text content from PDF files.
+- Read full text content from PDF files via URL.
 - Read text content from specific pages or page ranges.
 - Read PDF metadata (author, title, creation date, etc.).
 - Get the total page count of a PDF.
-- Process multiple PDF sources (local paths or URLs) in a single request.
-- Securely operates within the defined project root.
+- Process multiple PDF sources (URLs) in a single request.
 - Provides structured JSON output via MCP.
 - Available via npm and Docker Hub.
 

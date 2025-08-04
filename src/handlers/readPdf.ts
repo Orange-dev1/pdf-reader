@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import fs from 'node:fs/promises';
-import { resolvePath } from '../utils/pathUtils.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import type { ToolDefinition } from './index.js';
 
@@ -68,26 +66,23 @@ const pageSpecifierSchema = z.union([
 
 const PdfSourceSchema = z
   .object({
-    path: z.string().min(1).optional().describe('Relative path to the local PDF file.'),
-    url: z.string().url().optional().describe('URL of the PDF file.'),
+    url: z.string().url().describe('URL of the PDF file.'),
     pages: pageSpecifierSchema
       .optional()
       .describe(
         "Extract text only from specific pages (1-based) or ranges for *this specific source*. If provided, 'include_full_text' for the entire request is ignored for this source."
       ),
   })
-  .strict()
-  .refine((data) => !!(data.path && !data.url) || !!(!data.path && data.url), {
-    // Use boolean coercion instead of || for truthiness check if needed, though refine expects boolean
-    message: "Each source must have either 'path' or 'url', but not both.",
-  });
+  .strict();
 
 const ReadPdfArgsSchema = z
   .object({
     sources: z
       .array(PdfSourceSchema)
       .min(1)
-      .describe('An array of PDF sources to process, each can optionally specify pages.'),
+      .describe('An array of PDF sources to process, each must have a URL and can optionally specify pages.\
+        e.g. ([{"url": "https://example.com/whitepaper.pdf"},\
+         \ { "url": "https://example.com/document.pdf", "pages": "1" }])'),
     include_full_text: z
       .boolean()
       .optional()
@@ -178,47 +173,12 @@ const getTargetPages = (
   }
 };
 
-// Loads the PDF document from path or URL
+// Loads the PDF document from URL
 const loadPdfDocument = async (
-  source: { path?: string | undefined; url?: string | undefined }, // Explicitly allow undefined
+  source: { url: string },
   sourceDescription: string
 ): Promise<pdfjsLib.PDFDocumentProxy> => {
-  let pdfDataSource: Buffer | { url: string };
-  try {
-    if (source.path) {
-      const safePath = resolvePath(source.path); // resolvePath handles security checks
-      pdfDataSource = await fs.readFile(safePath);
-    } else if (source.url) {
-      pdfDataSource = { url: source.url };
-    } else {
-      // This case should be caught by Zod, but added for robustness
-      throw new McpError(
-        ErrorCode.InvalidParams,
-        `Source ${sourceDescription} missing 'path' or 'url'.`
-      );
-    }
-  } catch (err: unknown) {
-    // Handle errors during path resolution or file reading
-    let errorMessage: string; // Declare errorMessage here
-    const message = err instanceof Error ? err.message : String(err);
-    const errorCode = ErrorCode.InvalidRequest; // Default error code
-
-    if (
-      typeof err === 'object' &&
-      err !== null &&
-      'code' in err &&
-      err.code === 'ENOENT' &&
-      source.path
-    ) {
-      // Specific handling for file not found
-      errorMessage = `File not found at '${source.path}'.`;
-      // Optionally keep errorCode as InvalidRequest or change if needed
-    } else {
-      // Generic error for other file prep issues or resolvePath errors
-      errorMessage = `Failed to prepare PDF source ${sourceDescription}. Reason: ${message}`;
-    }
-    throw new McpError(errorCode, errorMessage, { cause: err instanceof Error ? err : undefined });
-  }
+  const pdfDataSource = { url: source.url };
 
   const loadingTask = pdfjsLib.getDocument(pdfDataSource);
   try {
@@ -323,7 +283,7 @@ const processSingleSource = async (
   globalIncludeMetadata: boolean,
   globalIncludePageCount: boolean
 ): Promise<PdfSourceResult> => {
-  const sourceDescription: string = source.path ?? source.url ?? 'unknown source';
+  const sourceDescription: string = source.url;
   let individualResult: PdfSourceResult = { source: sourceDescription, success: false };
 
   try {
@@ -331,9 +291,7 @@ const processSingleSource = async (
     const targetPages = getTargetPages(source.pages, sourceDescription);
 
     // 2. Load PDF Document (throws McpError on loading failure)
-    // Destructure to remove 'pages' before passing to loadPdfDocument due to exactOptionalPropertyTypes
-    const { pages: _pages, ...loadArgs } = source;
-    const pdfDocument = await loadPdfDocument(loadArgs, sourceDescription);
+    const pdfDocument = await loadPdfDocument(source, sourceDescription);
     const totalPages = pdfDocument.numPages;
 
     // 3. Extract Metadata & Page Count
@@ -434,7 +392,7 @@ export const handleReadPdfFunc = async (
 export const readPdfToolDefinition: ToolDefinition = {
   name: 'read_pdf',
   description:
-    'Reads content/metadata from one or more PDFs (local/URL). Each source can specify pages to extract.',
+    'Reads content/metadata from one or more PDFs via URL. Each source can specify pages to extract.',
   schema: ReadPdfArgsSchema,
   handler: handleReadPdfFunc,
 };

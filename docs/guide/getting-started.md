@@ -4,11 +4,11 @@ This guide assumes you have an MCP client or host environment capable of launchi
 
 ## 1. Launch the Server
 
-Ensure the server is launched with its **working directory set to the root of the project** containing the PDF files you want to access.
+The server can be launched in any environment since it only processes PDFs from public URLs.
 
 - **If installed via npm/pnpm:** Your MCP host might manage this automatically via `npx @sylphlab/pdf-reader-mcp`.
-- **If running standalone:** `cd /path/to/your/project && node /path/to/pdf-reader-mcp/build/index.js`
-- **If using Docker:** `docker run -i --rm -v \"/path/to/your/project:/app\" sylphlab/pdf-reader-mcp:latest`
+- **If running standalone:** `node /path/to/pdf-reader-mcp/build/index.js`
+- **If using Docker:** `docker run -i --rm sylphlab/pdf-reader-mcp:latest`
 
 ## 2. Using the `read_pdf` Tool
 
@@ -18,9 +18,8 @@ The server provides a single primary tool: `read_pdf`.
 
 The `read_pdf` tool accepts an object with the following properties:
 
-- `sources` (Array<Object>, required): An array of PDF sources to process. Each source object must contain either a `path` or a `url`.
-  - `path` (string, optional): Relative path to the local PDF file within the project root.
-  - `url` (string, optional): URL of the PDF file.
+- `sources` (Array<Object>, required): An array of PDF sources to process. Each source object must contain a `url`.
+  - `url` (string, required): URL of the PDF file.
   - `pages` (Array<number> | string, optional): Extract text only from specific pages (1-based) or ranges (e.g., `'1-3, 5'`). If provided, `include_full_text` is ignored for this source.
 - `include_full_text` (boolean, optional, default: `false`): Include the full text content of each PDF (only if `pages` is not specified for that source).
 - `include_metadata` (boolean, optional, default: `true`): Include metadata and info objects for each PDF.
@@ -34,7 +33,11 @@ _(See the [API Reference](./api/) (once generated) for the full JSON schema)_
 {
   "tool_name": "read_pdf",
   "arguments": {
-    "sources": [{ "path": "./documents/report.pdf" }],
+    "sources": [
+      {
+        "url": "https://example.com/document.pdf"
+      }
+    ],
     "include_metadata": true,
     "include_page_count": true,
     "include_full_text": false
@@ -50,7 +53,7 @@ _(See the [API Reference](./api/) (once generated) for the full JSON schema)_
   "arguments": {
     "sources": [
       {
-        "path": "./invoices/inv-001.pdf",
+        "url": "https://example.com/document.pdf",
         "pages": [2] // Get only page 2 text
       },
       {

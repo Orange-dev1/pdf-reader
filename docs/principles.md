@@ -18,7 +18,7 @@ We aim for the most direct approach:
 
 While not strictly functional, the code emphasizes:
 
-- Pure helper functions where possible (like path resolution checks).
+- Pure helper functions where possible.
 - Minimizing side effects within core logic (parsing doesn't alter files).
 - Using standard asynchronous patterns (`async/await`) effectively.
 
@@ -38,7 +38,7 @@ While not strictly functional, the code emphasizes:
 
 ## 6. Security Focus
 
-- Path traversal prevention is critical. All file paths are resolved relative to the project root and validated.
+- URL-only access ensures no local file system access is possible.
 
 ## 7. No Sponsorship
 

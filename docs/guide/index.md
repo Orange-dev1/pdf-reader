@@ -1,22 +1,33 @@
-# Introduction
+# Guide
 
-Welcome to the PDF Reader MCP Server documentation!
+Welcome to the PDF Reader MCP Server guide. This server provides a secure and efficient way for AI agents (like Cline) using the Model Context Protocol (MCP) to interact with PDF files via URL.
 
-This server provides a secure and efficient way for AI agents (like Cline) using the Model Context Protocol (MCP) to interact with PDF files located within a user's project directory.
+## Overview
 
-## What Problem Does It Solve?
+The PDF Reader MCP Server is designed to:
 
-AI agents often need information from PDFs (reports, invoices, manuals). Directly feeding PDF content is impractical due to format and size. This server offers specific tools to extract:
+- **Extract Text:** Read full text content or specific pages from PDF files.
+- **Get Metadata:** Retrieve PDF metadata such as author, title, creation date, etc.
+- **Count Pages:** Get the total number of pages in a PDF.
+- **Process Multiple Sources:** Handle multiple PDF URLs in a single request.
+- **Provide Structured Output:** Return data in a predictable JSON format.
 
-- Full text content
-- Text from specific pages
-- Metadata (author, title, etc.)
-- Total page count
+## Key Features
 
-All interactions happen securely within the defined project boundaries.
+- **Security:** URL-only access ensures no local file system access.
+- **Flexibility:** Handles any public PDF URL.
+- **Efficiency:** Allows targeted extraction of specific pages or ranges.
+- **Integration:** Designed for seamless use within MCP environments.
 
-## Core Principles
+## Quick Navigation
 
-- **Security:** Confined file access.
-- **Efficiency:** Structured data retrieval, avoiding large raw content transfer.
-- **Simplicity:** Easy integration into MCP-enabled agent workflows.
+- **[Getting Started](./getting-started.md):** Learn how to set up and use the server.
+- **[Installation](./installation.md):** Detailed installation instructions.
+- **[API Reference](../api/):** Complete API documentation (when available).
+
+## Use Cases
+
+- **Document Analysis:** Extract text from research papers, reports, or manuals.
+- **Content Summarization:** Get specific pages for summarization tasks.
+- **Metadata Extraction:** Retrieve document information for cataloging.
+- **Multi-Document Processing:** Handle multiple PDFs in batch operations.

@@ -1,26 +1,43 @@
 ---
-layout: home
-
-hero:
-  name: 'PDF Reader MCP Server'
-  text: 'Securely Read PDFs via MCP.'
-  tagline: An MCP server enabling AI agents to read text, metadata, and page counts from PDF files within a project's context.
-  image:
-    src: /logo.svg
-    alt: PDF Reader MCP Logo
-  actions:
-    - theme: brand
-      text: Get Started
-      link: /guide/getting-started
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/sylphlab/pdf-reader-mcp
-
-features:
-  - title: Secure Context
-    details: All operations are strictly confined to the project directory where the server is launched.
-  - title: Structured Data
-    details: Returns parsed text, metadata, and page counts in a structured format via MCP.
-  - title: Efficient & Focused
-    details: Uses pdfjs-dist for reliable parsing. Designed for integration with AI agent workflows.
+title: PDF Reader MCP Server
+tagline: An MCP server enabling AI agents to read text, metadata, and page counts from PDF files via URL.
 ---
+
+# PDF Reader MCP Server
+
+Empower your AI agents with secure PDF reading capabilities through URL access.
+
+## Features
+
+- **Text Extraction:** Read full text or specific pages from PDF files
+- **Metadata Retrieval:** Get author, title, creation date, and other document information
+- **Page Counting:** Determine the total number of pages in a PDF
+- **Multi-Source Processing:** Handle multiple PDF URLs in a single request
+- **Structured Output:** Receive data in a predictable JSON format
+
+## Security
+
+The server only processes PDFs from public URLs, ensuring no local file system access and maintaining security boundaries.
+
+## Quick Start
+
+```json
+{
+  "tool_name": "read_pdf",
+  "arguments": {
+    "sources": [
+      {
+        "url": "https://example.com/document.pdf"
+      }
+    ]
+  }
+}
+```
+
+## Installation
+
+```bash
+npm install @sylphlab/pdf-reader-mcp
+```
+
+See the [Installation Guide](./guide/installation.md) for detailed setup instructions.
