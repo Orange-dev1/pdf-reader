@@ -59,12 +59,7 @@ Configure your MCP host to run the container:
   "mcpServers": {
     "pdf-reader-mcp": {
       "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "sylphlab/pdf-reader-mcp:latest"
-      ],
+      "args": ["run", "-i", "--rm", "sylphlab/pdf-reader-mcp:latest"],
       "name": "PDF Reader (Docker)"
     }
   }
@@ -93,21 +88,16 @@ Configure your MCP host to run the container:
 
 Assuming the server is running and configured in your MCP host:
 
-**MCP Request (Get metadata and page 2 text from a PDF via URL):**
+**MCP Request (Get metadata and page count for a PDF via URL):**
 
 ```json
 {
   "tool_name": "read_pdf",
   "arguments": {
-    "sources": [
-      {
-        "url": "https://example.com/my_report.pdf",
-        "pages": [2]
-      }
-    ],
+    "url": "https://example.com/document.pdf",
     "include_metadata": true,
-    "include_page_count": false, // Default is true, explicitly false here
-    "include_full_text": false // Ignored because 'pages' is specified
+    "include_page_count": true,
+    "include_full_text": false
   }
 }
 ```
@@ -118,15 +108,13 @@ Assuming the server is running and configured in your MCP host:
 {
   "results": [
     {
-      "source": "https://example.com/my_report.pdf",
+      "source": "https://example.com/document.pdf",
       "success": true,
       "data": {
-        "page_texts": [
-          { "page": 2, "text": "Text content from page 2..." }
-        ],
         "info": { ... },
-        "metadata": { ... }
-        // num_pages not included as requested
+        "metadata": { ... },
+        "num_pages": 10
+        // full_text not included as requested
       }
     }
   ]

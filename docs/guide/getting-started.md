@@ -18,12 +18,10 @@ The server provides a single primary tool: `read_pdf`.
 
 The `read_pdf` tool accepts an object with the following properties:
 
-- `sources` (Array<Object>, required): An array of PDF sources to process. Each source object must contain a `url`.
-  - `url` (string, required): URL of the PDF file.
-  - `pages` (Array<number> | string, optional): Extract text only from specific pages (1-based) or ranges (e.g., `'1-3, 5'`). If provided, `include_full_text` is ignored for this source.
-- `include_full_text` (boolean, optional, default: `false`): Include the full text content of each PDF (only if `pages` is not specified for that source).
-- `include_metadata` (boolean, optional, default: `true`): Include metadata and info objects for each PDF.
-- `include_page_count` (boolean, optional, default: `true`): Include the total number of pages for each PDF.
+- `url` (string, required): URL of the PDF file.
+- `include_full_text` (boolean, optional, default: `false`): Include the full text content of the PDF.
+- `include_metadata` (boolean, optional, default: `false`): Include metadata and info objects for the PDF.
+- `include_page_count` (boolean, optional, default: `true`): Include the total number of pages for the PDF.
 
 _(See the [API Reference](./api/) (once generated) for the full JSON schema)_
 
@@ -33,11 +31,7 @@ _(See the [API Reference](./api/) (once generated) for the full JSON schema)_
 {
   "tool_name": "read_pdf",
   "arguments": {
-    "sources": [
-      {
-        "url": "https://example.com/document.pdf"
-      }
-    ],
+    "url": "https://example.com/document.pdf",
     "include_metadata": true,
     "include_page_count": true,
     "include_full_text": false
@@ -45,42 +39,31 @@ _(See the [API Reference](./api/) (once generated) for the full JSON schema)_
 }
 ```
 
-**Example MCP Request (Get text from page 2 of one PDF, full text of another):**
+**Example MCP Request (Get full text from a PDF):**
 
 ```json
 {
   "tool_name": "read_pdf",
   "arguments": {
-    "sources": [
-      {
-        "url": "https://example.com/document.pdf",
-        "pages": [2] // Get only page 2 text
-      },
-      {
-        "url": "https://example.com/whitepaper.pdf"
-        // No 'pages', so 'include_full_text' applies
-      }
-    ],
+    "url": "https://example.com/document.pdf",
+    "include_full_text": true,
     "include_metadata": false,
-    "include_page_count": false,
-    "include_full_text": true // Applies only to the URL source
+    "include_page_count": false
   }
 }
 ```
 
 ## 3. Understanding the Response
 
-The response will be an array named `results`, with each element corresponding to a source object in the request array. Each result object contains:
+The response will be an object named `results`, containing a single result for the PDF. The result object contains:
 
-- `source` (string): The original path or URL provided in the request.
-- `success` (boolean): Indicates if processing this source was successful.
+- `source` (string): The original URL provided in the request.
+- `success` (boolean): Indicates if processing was successful.
 - `data` (Object, optional): Present if `success` is `true`. Contains the requested data:
   - `num_pages` (number, optional): Total page count (if `include_page_count` was true).
   - `info` (Object, optional): PDF information dictionary (if `include_metadata` was true).
   - `metadata` (Object, optional): PDF metadata (if `include_metadata` was true).
-  - `page_texts` (Array<Object>, optional): Array of objects, each with `page` (number) and `text` (string), for pages where text was extracted (if `pages` was specified or `include_full_text` was true without `pages`).
-- `error` (Object, optional): Present if `success` is `false`. Contains:
-  - `code` (string): An error code (e.g., `FileNotFound`, `InvalidRequest`, `PdfParsingError`, `DownloadError`, `UnknownError`).
-  - `message` (string): A description of the error.
+  - `full_text` (string, optional): Full text content (if `include_full_text` was true).
+- `error` (string, optional): Present if `success` is `false`. Contains a description of the error.
 
 _(See the [API Reference](./api/) (once generated) for detailed response structure and error codes.)_

@@ -1,14 +1,10 @@
 import { z } from 'zod';
 import pkg from 'pdfjs-dist';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import type { ToolDefinition } from './index.js';
-
 const { getDocument } = pkg;
-type PDFDocumentProxy = pkg.PDFDocumentProxy;
-
 // Helper to parse page range strings (e.g., "1-3,5,7-")
 // Helper to parse a single range part (e.g., "1-3", "5", "7-")
-const parseRangePart = (part: string, pages: Set<number>): void => {
+const parseRangePart = (part, pages) => {
   const trimmedPart = part.trim();
   if (trimmedPart.includes('-')) {
     const [startStr, endStr] = trimmedPart.split('-');
@@ -18,11 +14,9 @@ const parseRangePart = (part: string, pages: Set<number>): void => {
     }
     const start = parseInt(startStr, 10);
     const end = endStr === '' || endStr === undefined ? Infinity : parseInt(endStr, 10);
-
     if (isNaN(start) || isNaN(end) || start <= 0 || start > end) {
       throw new Error(`Invalid page range values: ${trimmedPart}`);
     }
-
     // Add a reasonable upper limit to prevent infinite loops for open ranges
     const practicalEnd = Math.min(end, start + 10000); // Limit range parsing depth
     for (let i = start; i <= practicalEnd; i++) {
@@ -41,10 +35,9 @@ const parseRangePart = (part: string, pages: Set<number>): void => {
     pages.add(page);
   }
 };
-
 // Parses the complete page range string (e.g., "1-3,5,7-")
-const parsePageRanges = (ranges: string): number[] => {
-  const pages = new Set<number>();
+const parsePageRanges = (ranges) => {
+  const pages = new Set();
   const parts = ranges.split(',');
   for (const part of parts) {
     parseRangePart(part, pages); // Delegate parsing of each part
@@ -54,7 +47,6 @@ const parsePageRanges = (ranges: string): number[] => {
   }
   return Array.from(pages).sort((a, b) => a - b);
 };
-
 // --- Zod Schemas ---
 const ReadPdfArgsSchema = z
   .object({
@@ -76,53 +68,14 @@ const ReadPdfArgsSchema = z
       .describe('Include the total number of pages for the PDF.'),
   })
   .strict();
-
-type ReadPdfArgs = z.infer<typeof ReadPdfArgsSchema>;
-
-// --- Result Type Interfaces ---
-interface PdfInfo {
-  PDFFormatVersion?: string;
-  IsLinearized?: boolean;
-  IsAcroFormPresent?: boolean;
-  IsXFAPresent?: boolean;
-  [key: string]: unknown;
-}
-
-type PdfMetadata = Record<string, unknown>; // Use Record for better type safety
-
-interface ExtractedPageText {
-  page: number;
-  text: string;
-}
-
-interface PdfResultData {
-  info?: PdfInfo;
-  metadata?: PdfMetadata;
-  num_pages?: number;
-  full_text?: string;
-  page_texts?: ExtractedPageText[];
-  warnings?: string[];
-}
-
-interface PdfSourceResult {
-  source: string;
-  success: boolean;
-  data?: PdfResultData;
-  error?: string;
-}
-
 // --- Helper Functions ---
-
 // Parses the page specification for a single source
-const getTargetPages = (
-  sourcePages: string | number[] | undefined,
-  sourceDescription: string
-): number[] | undefined => {
+const getTargetPages = (sourcePages, sourceDescription) => {
   if (!sourcePages) {
     return undefined;
   }
   try {
-    let targetPages: number[];
+    let targetPages;
     if (typeof sourcePages === 'string') {
       targetPages = parsePageRanges(sourcePages);
     } else {
@@ -137,7 +90,7 @@ const getTargetPages = (
       throw new Error('Page specification resulted in an empty set of pages.');
     }
     return targetPages;
-  } catch (error: unknown) {
+  } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     // Throw McpError for invalid page specs caught during parsing
     throw new McpError(
@@ -146,18 +99,13 @@ const getTargetPages = (
     );
   }
 };
-
 // Loads the PDF document from URL
-const loadPdfDocument = async (
-  source: { url: string },
-  sourceDescription: string
-): Promise<PDFDocumentProxy> => {
+const loadPdfDocument = async (source, sourceDescription) => {
   const pdfDataSource = { url: source.url };
-
   const loadingTask = getDocument(pdfDataSource);
   try {
     return await loadingTask.promise;
-  } catch (err: unknown) {
+  } catch (err) {
     console.error(`[PDF Reader MCP] PDF.js loading error for ${sourceDescription}:`, err);
     const message = err instanceof Error ? err.message : String(err);
     // Use ?? for default message
@@ -168,29 +116,24 @@ const loadPdfDocument = async (
     );
   }
 };
-
 // Extracts metadata and page count
-const extractMetadataAndPageCount = async (
-  pdfDocument: PDFDocumentProxy,
-  includeMetadata: boolean,
-  includePageCount: boolean
-): Promise<Pick<PdfResultData, 'info' | 'metadata' | 'num_pages'>> => {
-  const output: Pick<PdfResultData, 'info' | 'metadata' | 'num_pages'> = {};
+const extractMetadataAndPageCount = async (pdfDocument, includeMetadata, includePageCount) => {
+  const output = {};
   if (includePageCount) {
     output.num_pages = pdfDocument.numPages;
   }
   if (includeMetadata) {
     try {
       const pdfMetadata = await pdfDocument.getMetadata();
-      const infoData = pdfMetadata.info as PdfInfo | undefined;
+      const infoData = pdfMetadata.info;
       if (infoData) {
         output.info = infoData;
       }
       const metadataObj = pdfMetadata.metadata;
       // Handle metadata object safely
-      const metadataData = metadataObj as unknown as PdfMetadata;
+      const metadataData = metadataObj;
       output.metadata = metadataData;
-    } catch (metaError: unknown) {
+    } catch (metaError) {
       console.warn(
         `[PDF Reader MCP] Error extracting metadata: ${metaError instanceof Error ? metaError.message : String(metaError)}`
       );
@@ -199,23 +142,18 @@ const extractMetadataAndPageCount = async (
   }
   return output;
 };
-
 // Extracts text from specified pages
-const extractPageTexts = async (
-  pdfDocument: PDFDocumentProxy,
-  pagesToProcess: number[],
-  sourceDescription: string
-): Promise<ExtractedPageText[]> => {
-  const extractedPageTexts: ExtractedPageText[] = [];
+const extractPageTexts = async (pdfDocument, pagesToProcess, sourceDescription) => {
+  const extractedPageTexts = [];
   for (const pageNum of pagesToProcess) {
     let pageText = '';
     try {
       const page = await pdfDocument.getPage(pageNum);
       const textContent = await page.getTextContent();
       pageText = textContent.items
-        .map((item: unknown) => (item as { str: string }).str) // Type assertion
+        .map((item) => item.str) // Type assertion
         .join('');
-    } catch (pageError: unknown) {
+    } catch (pageError) {
       const message = pageError instanceof Error ? pageError.message : String(pageError);
       console.warn(
         `[PDF Reader MCP] Error getting text content for page ${String(pageNum)} in ${sourceDescription}: ${message}` // Explicit string conversion
@@ -228,16 +166,10 @@ const extractPageTexts = async (
   extractedPageTexts.sort((a, b) => a.page - b.page);
   return extractedPageTexts;
 };
-
 // Determines the actual list of pages to process based on target pages and total pages
-const determinePagesToProcess = (
-  targetPages: number[] | undefined,
-  totalPages: number,
-  includeFullText: boolean
-): { pagesToProcess: number[]; invalidPages: number[] } => {
-  let pagesToProcess: number[] = [];
-  let invalidPages: number[] = [];
-
+const determinePagesToProcess = (targetPages, totalPages, includeFullText) => {
+  let pagesToProcess = [];
+  let invalidPages = [];
   if (targetPages) {
     // Filter target pages based on actual total pages
     pagesToProcess = targetPages.filter((p) => p <= totalPages);
@@ -248,40 +180,34 @@ const determinePagesToProcess = (
   }
   return { pagesToProcess, invalidPages };
 };
-
 // Processes a single PDF source
 const processSingleSource = async (
-  source: z.infer<typeof ReadPdfArgsSchema>,
-  globalIncludeFullText: boolean,
-  globalIncludeMetadata: boolean,
-  globalIncludePageCount: boolean
-): Promise<PdfSourceResult> => {
-  const sourceDescription: string = source.url;
-  let individualResult: PdfSourceResult = { source: sourceDescription, success: false };
-
+  source,
+  globalIncludeFullText,
+  globalIncludeMetadata,
+  globalIncludePageCount
+) => {
+  const sourceDescription = source.url;
+  let individualResult = { source: sourceDescription, success: false };
   try {
     // 1. Parse target pages for this source (throws McpError on invalid spec)
     const targetPages = getTargetPages(undefined, sourceDescription); // No longer using source.pages
-
     // 2. Load PDF Document (throws McpError on loading failure)
     const pdfDocument = await loadPdfDocument(source, sourceDescription);
     const totalPages = pdfDocument.numPages;
-
     // 3. Extract Metadata & Page Count
     const metadataOutput = await extractMetadataAndPageCount(
       pdfDocument,
       globalIncludeMetadata,
       globalIncludePageCount
     );
-    const output: PdfResultData = { ...metadataOutput }; // Start building output
-
+    const output = { ...metadataOutput }; // Start building output
     // 4. Determine actual pages to process
     const { pagesToProcess, invalidPages } = determinePagesToProcess(
       targetPages,
       totalPages,
       globalIncludeFullText // Pass the global flag
     );
-
     // Add warnings for invalid requested pages
     if (invalidPages.length > 0) {
       output.warnings = output.warnings ?? [];
@@ -289,7 +215,6 @@ const processSingleSource = async (
         `Requested page numbers ${invalidPages.join(', ')} exceed total pages (${String(totalPages)}).`
       );
     }
-
     // 5. Extract Text (if needed)
     if (pagesToProcess.length > 0) {
       const extractedPageTexts = await extractPageTexts(
@@ -305,9 +230,8 @@ const processSingleSource = async (
         output.full_text = extractedPageTexts.map((p) => p.text).join('\n\n');
       }
     }
-
     individualResult = { ...individualResult, data: output, success: true };
-  } catch (error: unknown) {
+  } catch (error) {
     let errorMessage = `Failed to process PDF from ${sourceDescription}.`;
     if (error instanceof McpError) {
       errorMessage = error.message; // Use message from McpError directly
@@ -322,15 +246,12 @@ const processSingleSource = async (
   }
   return individualResult;
 };
-
 // --- Main Handler Function ---
-export const handleReadPdfFunc = async (
-  args: unknown
-): Promise<{ content: { type: string; text: string }[] }> => {
-  let parsedArgs: ReadPdfArgs;
+export const handleReadPdfFunc = async (args) => {
+  let parsedArgs;
   try {
     parsedArgs = ReadPdfArgsSchema.parse(args);
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       throw new McpError(
         ErrorCode.InvalidParams,
@@ -341,9 +262,7 @@ export const handleReadPdfFunc = async (
     const message = error instanceof Error ? error.message : String(error);
     throw new McpError(ErrorCode.InvalidParams, `Argument validation failed: ${message}`);
   }
-
   const { url, include_full_text, include_metadata, include_page_count } = parsedArgs;
-
   // Process the single PDF source
   const result = await processSingleSource(
     { url, include_full_text, include_metadata, include_page_count },
@@ -351,7 +270,6 @@ export const handleReadPdfFunc = async (
     include_metadata,
     include_page_count
   );
-
   return {
     content: [
       {
@@ -361,9 +279,8 @@ export const handleReadPdfFunc = async (
     ],
   };
 };
-
 // Export the consolidated ToolDefinition
-export const readPdfToolDefinition: ToolDefinition = {
+export const readPdfToolDefinition = {
   name: 'read_pdf',
   description: 'Reads content/metadata from a PDF via URL.',
   schema: ReadPdfArgsSchema,
