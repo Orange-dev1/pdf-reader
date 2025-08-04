@@ -52,7 +52,7 @@ Pull the image:
 docker pull sylphlab/pdf-reader-mcp:latest
 ```
 
-Configure your MCP host to run the container, mounting your project directory to `/app`:
+Configure your MCP host to run the container:
 
 ```json
 {
@@ -63,8 +63,6 @@ Configure your MCP host to run the container, mounting your project directory to
         "run",
         "-i",
         "--rm",
-        "-v",
-        "/path/to/your/project:/app", // Or use "$PWD:/app", "%CD%:/app", etc.
         "sylphlab/pdf-reader-mcp:latest"
       ],
       "name": "PDF Reader (Docker)"
@@ -90,7 +88,6 @@ Configure your MCP host to run the container, mounting your project directory to
      }
    }
    ```
-   _(Ensure the host sets the correct `cwd` for the target project)_
 
 ## Quick Start
 
