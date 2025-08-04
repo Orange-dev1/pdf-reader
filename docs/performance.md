@@ -30,7 +30,4 @@ _(Higher hz indicates better performance. Results may vary based on PDF complexi
 
 ## Future Performance Improvements
 
-- **Caching:** Implement caching for frequently accessed PDFs.
-- **Streaming:** Consider streaming PDF processing for very large files.
-- **Parallel Processing:** Explore parallel processing for multiple PDF sources.
-- **Network Optimization:** Optimize network requests for URL-based PDFs.
+- **Optimized Processing:** Efficient handling of large PDF files with streaming capabilities.

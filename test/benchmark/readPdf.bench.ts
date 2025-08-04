@@ -1,35 +1,17 @@
-import { describe, bench, vi as _vi } from 'vitest'; // Prefix unused import
-import { handleReadPdfFunc } from '../../src/handlers/readPdf'; // Adjust path as needed
-import path from 'node:path';
-import fs from 'node:fs/promises';
+import { describe, bench } from 'vitest';
+import { handleReadPdfFunc } from '../../src/handlers/readPdf.js';
 
-// Mock the project root - Vitest runs from the project root by default
-const PROJECT_ROOT = process.cwd();
-const SAMPLE_PDF_PATH = 'test/fixtures/sample.pdf'; // Relative path to test PDF
+// Test URL for benchmarking
+const TEST_PDF_URL = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
 
-// Pre-check if the sample PDF exists to avoid errors during benchmark setup
-let pdfExists = false;
-try {
-  await fs.access(path.resolve(PROJECT_ROOT, SAMPLE_PDF_PATH));
-  pdfExists = true;
-} catch (error: unknown) {
-  // Explicitly type error as unknown
-  // Check if error is an instance of Error before accessing message
-  const message = error instanceof Error ? error.message : String(error);
-  console.warn(
-    `Warning: Sample PDF not found at ${SAMPLE_PDF_PATH}. Benchmarks requiring it will be skipped. Details: ${message}`
-  );
-}
-
-describe('read_pdf Handler Benchmarks', () => {
+describe('PDF Reader Performance Benchmarks', () => {
   // Benchmark getting only metadata and page count
   bench(
     'Get Metadata & Page Count',
     async () => {
-      if (!pdfExists) return; // Skip if PDF doesn't exist
       try {
         await handleReadPdfFunc({
-          sources: [{ path: SAMPLE_PDF_PATH }],
+          url: TEST_PDF_URL,
           include_metadata: true,
           include_page_count: true,
           include_full_text: false,
@@ -48,10 +30,9 @@ describe('read_pdf Handler Benchmarks', () => {
   bench(
     'Get Full Text',
     async () => {
-      if (!pdfExists) return;
       try {
         await handleReadPdfFunc({
-          sources: [{ path: SAMPLE_PDF_PATH }],
+          url: TEST_PDF_URL,
           include_metadata: false,
           include_page_count: false,
           include_full_text: true,
@@ -66,70 +47,46 @@ describe('read_pdf Handler Benchmarks', () => {
     { time: 1000 }
   );
 
-  // Benchmark getting specific pages (e.g., page 1)
+  // Benchmark getting all content (metadata, page count, and full text)
   bench(
-    'Get Specific Page (Page 1)',
+    'Get All Content',
     async () => {
-      if (!pdfExists) return;
       try {
         await handleReadPdfFunc({
-          sources: [{ path: SAMPLE_PDF_PATH, pages: [1] }],
-          include_metadata: false,
-          include_page_count: false,
-          include_full_text: false, // Should be ignored when pages is set
+          url: TEST_PDF_URL,
+          include_metadata: true,
+          include_page_count: true,
+          include_full_text: true,
         });
       } catch (error: unknown) {
         // Explicitly type error as unknown
         console.warn(
-          `Benchmark 'Get Specific Page (Page 1)' failed: ${error instanceof Error ? error.message : String(error)}`
+          `Benchmark 'Get All Content' failed: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     },
     { time: 1000 }
   );
 
-  // Benchmark getting multiple specific pages (e.g., pages 1 & 2)
+  // Benchmark handling a non-existent URL (error path)
   bench(
-    'Get Specific Pages (Pages 1 & 2)',
-    async () => {
-      if (!pdfExists) return;
-      // Assuming sample.pdf has at least 2 pages
-      try {
-        await handleReadPdfFunc({
-          sources: [{ path: SAMPLE_PDF_PATH, pages: [1, 2] }],
-          include_metadata: false,
-          include_page_count: false,
-        });
-      } catch (error: unknown) {
-        // Explicitly type error as unknown
-        console.warn(
-          `Benchmark 'Get Specific Pages (Pages 1 & 2)' failed: ${error instanceof Error ? error.message : String(error)}`
-        );
-      }
-    },
-    { time: 1000 }
-  );
-
-  // Benchmark handling a non-existent file (error path)
-  bench(
-    'Handle Non-Existent File',
+    'Handle Non-Existent URL',
     async () => {
       try {
         await handleReadPdfFunc({
-          sources: [{ path: 'non/existent/file.pdf' }],
+          url: 'https://example.com/non-existent.pdf',
           include_metadata: true,
           include_page_count: true,
         });
       } catch (error: unknown) {
         // Explicitly type error as unknown
-        // Expecting an error here, but log if something unexpected happens during the benchmark itself
         console.warn(
-          `Benchmark 'Handle Non-Existent File' unexpectedly failed internally: ${error instanceof Error ? error.message : String(error)}`
+          `Benchmark 'Handle Non-Existent URL' failed: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     },
     { time: 1000 }
   );
 
-  // Add more benchmarks as needed (e.g., larger PDFs, URL sources if feasible in benchmark)
+  // Add more benchmarks as needed (e.g., larger PDFs, different URL sources)
 });

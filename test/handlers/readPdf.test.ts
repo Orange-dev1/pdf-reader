@@ -12,7 +12,9 @@ const mockGetDocument = vi.fn();
 
 vi.doMock('pdfjs-dist', () => {
   return {
-    getDocument: mockGetDocument,
+    default: {
+      getDocument: mockGetDocument,
+    },
   };
 });
 

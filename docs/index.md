@@ -25,11 +25,10 @@ The server only processes PDFs from public URLs, ensuring no local file system a
 {
   "tool_name": "read_pdf",
   "arguments": {
-    "sources": [
-      {
-        "url": "https://example.com/document.pdf"
-      }
-    ]
+    "url": "https://example.com/document.pdf",
+    "include_metadata": true,
+    "include_page_count": true,
+    "include_full_text": false
   }
 }
 ```

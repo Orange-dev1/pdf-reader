@@ -148,11 +148,10 @@ See the [Performance Documentation](./docs/performance/index.md) for more detail
 
 ## Features
 
-- Read full text content from PDF files via URL.
+- Process PDF files from URLs with comprehensive content extraction
 - Read text content from specific pages or page ranges.
 - Read PDF metadata (author, title, creation date, etc.).
 - Get the total page count of a PDF.
-- Process multiple PDF sources (URLs) in a single request.
 - Provides structured JSON output via MCP.
 - Available via npm and Docker Hub.
 

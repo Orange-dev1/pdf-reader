@@ -6,10 +6,7 @@ Welcome to the PDF Reader MCP Server guide. This server provides a secure and ef
 
 The PDF Reader MCP Server is designed to:
 
-- **Extract Text:** Read full text content or specific pages from PDF files.
-- **Get Metadata:** Retrieve PDF metadata such as author, title, creation date, etc.
-- **Count Pages:** Get the total number of pages in a PDF.
-- **Process Multiple Sources:** Handle multiple PDF URLs in a single request.
+- **Comprehensive Content Extraction:** Extract full text, metadata, and page information from PDF files.
 - **Provide Structured Output:** Return data in a predictable JSON format.
 
 ## Key Features
