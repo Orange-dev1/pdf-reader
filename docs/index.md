@@ -33,6 +33,8 @@ The server only processes PDFs from public URLs, ensuring no local file system a
 }
 ```
 
+**Note:** By default, only the first two pages are processed unless `include_full_text` is set to `true`.
+
 ## Installation
 
 ```bash

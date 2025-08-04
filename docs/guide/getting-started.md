@@ -19,7 +19,7 @@ The server provides a single primary tool: `read_pdf`.
 The `read_pdf` tool accepts an object with the following properties:
 
 - `url` (string, required): URL of the PDF file.
-- `include_full_text` (boolean, optional, default: `false`): Include the full text content of the PDF.
+- `include_full_text` (boolean, optional, default: `false`): Include the full text content of the PDF. If false, only the first two pages will be processed.
 - `include_metadata` (boolean, optional, default: `false`): Include metadata and info objects for the PDF.
 - `include_page_count` (boolean, optional, default: `true`): Include the total number of pages for the PDF.
 

@@ -149,7 +149,7 @@ See the [Performance Documentation](./docs/performance/index.md) for more detail
 ## Features
 
 - Process PDF files from URLs with comprehensive content extraction
-- Read text content from specific pages or page ranges.
+- Read text content from the first two pages by default, or full text when requested
 - Read PDF metadata (author, title, creation date, etc.).
 - Get the total page count of a PDF.
 - Provides structured JSON output via MCP.

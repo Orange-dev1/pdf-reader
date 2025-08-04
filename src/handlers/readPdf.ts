@@ -63,7 +63,7 @@ const ReadPdfArgsSchema = z
       .boolean()
       .optional()
       .default(false)
-      .describe('Include the full text content of the PDF.'),
+      .describe('Include the full text content of the PDF. If false, only the first two pages will be processed.'),
     include_metadata: z
       .boolean()
       .optional()
@@ -245,6 +245,10 @@ const determinePagesToProcess = (
   } else if (includeFullText) {
     // If no specific pages requested for this source, use global flag
     pagesToProcess = Array.from({ length: totalPages }, (_, i) => i + 1);
+  } else {
+    // Default: process first two pages if no specific pages requested and not requesting full text
+    const defaultPages = Math.min(2, totalPages);
+    pagesToProcess = Array.from({ length: defaultPages }, (_, i) => i + 1);
   }
   return { pagesToProcess, invalidPages };
 };
